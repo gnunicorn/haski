@@ -97,7 +97,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	spec_name: create_runtime_str!("haski"),
 	impl_name: create_runtime_str!("haski"),
 	authoring_version: 3,
-	spec_version: 4,
+	spec_version: 5,
 	impl_version: 4,
 	apis: RUNTIME_API_VERSIONS,
 };
