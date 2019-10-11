@@ -18,11 +18,15 @@ pub trait Trait: system::Trait + balances::Trait {
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 }
 
+type TeamId = Vec<u8>;
+type ProjectId = Vec<u8>;
+
 // This module's storage items.
 decl_storage! {
 	trait Store for Module<T: Trait> as Haski {
 		Faucets get(faucets): map T::AccountId => Option<T::Balance>;
-		Teams get(teams): map Vec<u8> => Vec<T::AccountId>;
+		Teams get(teams): map TeamId => Vec<T::AccountId>;
+		Projects get(projects): map ProjectId => TeamId;
 	}
 }
 
@@ -103,10 +107,42 @@ decl_module! {
 
 			Ok(())
 		}
-		
-		
+
+		pub fn add_project(origin, team: TeamId, project: ProjectId) -> Result {
+			let who = ensure_signed(origin)?;
+			if !Teams::<T>::exists(&team) {
+				return Err("Team doesn't exists!");
+			}
+
+			if Teams::<T>::get(&team).iter().find(|m| **m == who).is_none() {
+				return Err("Signer is not a team member");
+			}
+
+			if Projects::exists(&project) {
+				return Err("Project already exists!");
+			}
 
 
+			Projects::insert(project, team);
+			Ok(())
+		}
+
+		pub fn drop_project(origin, project: ProjectId) -> Result {
+			let who = ensure_signed(origin)?;
+
+			if Projects::exists(&project) {
+				return Err("Project already exists!");
+			}
+
+			let team = Projects::get(&project);
+
+			if Teams::<T>::get(&team).iter().find(|m| **m == who).is_none() {
+				return Err("Signer is not a team member");
+			}
+
+			Projects::remove(project);
+			Ok(())
+		}
 	}
 }
 
